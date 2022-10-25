@@ -28,21 +28,20 @@ export async function render(request: expressRequest, response: expressResponse,
 	const { query } = createStaticHandler(routes(queryClient));
 	const remixRequest = createFetchRequest(request);
 	const context = await query(remixRequest);
-	const head = template.split('<div id="root"></div>')[0] + '<div id="root">';
-	const tail = '</div>' + template.split('<div id="root"></div>')[1];
 
 	if (context instanceof globalThis.Response) {
 		throw context;
 	}
 
-	let dehydratedState = dehydrate(queryClient);
-
-	let router = createStaticRouter(routes(queryClient), context);
+	const dehydratedState = dehydrate(queryClient);
+	const router = createStaticRouter(routes(queryClient), context);
+	const head = template.split('<div id="root"></div>')[0] + '<div id="root">';
+	const tail = '</div>' + template.split('<div id="root"></div>')[1];
 
 	const { pipe, abort } = ReactDOMServer.renderToPipeableStream(
 		<QueryClientProvider client={queryClient}>
 			<Hydrate state={dehydratedState}>
-				<StaticRouterProvider router={router} context={context} nonce='the-nonce' />
+				<StaticRouterProvider router={router} context={context} nonce='rrState' hydrate={true} />
 			</Hydrate>
 		</QueryClientProvider>,
 		{
@@ -64,11 +63,13 @@ export async function render(request: expressRequest, response: expressResponse,
 			},
 			onAllReady() {
 				response.write(tail);
+				response.write(
+					`<script nonce='rqState'>window.__REACT_QUERY_STATE__=${JSON.stringify(dehydratedState).replace(
+						/</g,
+						'\\u003c'
+					)}</script>`
+				);
 			},
-			bootstrapScriptContent: `window.__REACT_QUERY_STATE__=${JSON.stringify(dehydratedState).replace(
-				/</g,
-				'\\u003c'
-			)}`,
 		}
 	);
 	setTimeout(abort, ABORT_DELAY);

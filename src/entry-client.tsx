@@ -16,20 +16,29 @@ const queryClient = new QueryClient({
 	},
 });
 
-const dehydratedState = window.__REACT_QUERY_STATE__;
+const dehydratedQueryState = window.__REACT_QUERY_STATE__;
+const dehydratedRouterState = window.__staticRouterHydrationData;
+
 delete window.__REACT_QUERY_STATE__;
-const rqstate = document.getElementById('rqstate');
-rqstate?.remove();
+delete window.__staticRouterHydrationData;
+
+const elements = Array.from(document.querySelectorAll('script')).filter((el) => {
+	return el.nonce && (el.nonce === 'rqState' || el.nonce === 'rrState');
+});
+elements.find((el) => el.nonce === 'rqState')?.remove();
+elements.find((el) => el.nonce === 'rrState')?.remove();
 
 const container = document.getElementById('root');
 
-const router = createBrowserRouter(routes(queryClient));
+const router = createBrowserRouter(routes(queryClient), {
+	hydrationData: dehydratedRouterState,
+});
 
 startTransition(() => {
 	ReactDOM.hydrateRoot(
 		container!,
 		<QueryClientProvider client={queryClient}>
-			<Hydrate state={dehydratedState}>
+			<Hydrate state={dehydratedQueryState}>
 				<RouterProvider router={router} fallbackElement={null} />
 			</Hydrate>
 		</QueryClientProvider>
