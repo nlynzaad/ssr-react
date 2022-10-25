@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
-import type { Request as expressRequest } from 'express';
+import type { Request as expressRequest, Response as expressResponse } from 'express';
 import { QueryClientProvider, Hydrate, dehydrate, QueryClient, hydrate } from '@tanstack/react-query';
 import { unstable_createStaticHandler as createStaticHandler } from '@remix-run/router';
 import {
@@ -9,7 +9,10 @@ import {
 } from 'react-router-dom/server';
 import routes from './routes';
 
-export async function render(request: expressRequest) {
+const ABORT_DELAY = 5000;
+
+export async function render(request: expressRequest, response: expressResponse, template: string) {
+	let didError = false;
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
@@ -22,9 +25,11 @@ export async function render(request: expressRequest) {
 		},
 	});
 
-	let { query } = createStaticHandler(routes(queryClient));
-	let remixRequest = createFetchRequest(request);
-	let context = await query(remixRequest);
+	const { query } = createStaticHandler(routes(queryClient));
+	const remixRequest = createFetchRequest(request);
+	const context = await query(remixRequest);
+	const head = template.split('<div id="root"></div>')[0] + '<div id="root">';
+	const tail = '</div>' + template.split('<div id="root"></div>')[1];
 
 	if (context instanceof globalThis.Response) {
 		throw context;
@@ -34,21 +39,39 @@ export async function render(request: expressRequest) {
 
 	let router = createStaticRouter(routes(queryClient), context);
 
-	const appHtml = ReactDOMServer.renderToString(
+	const { pipe, abort } = ReactDOMServer.renderToPipeableStream(
 		<QueryClientProvider client={queryClient}>
 			<Hydrate state={dehydratedState}>
 				<StaticRouterProvider router={router} context={context} nonce='the-nonce' />
 			</Hydrate>
-		</QueryClientProvider>
+		</QueryClientProvider>,
+		{
+			onShellReady() {
+				response.setHeader('Content-type', 'text/html');
+				response.statusCode = didError ? 500 : 200;
+				response.write(head);
+				pipe(response);
+			},
+			onShellError(err: unknown) {
+				response.statusCode = 500;
+				response.send('<!doctype html><p>Error Loading...</p>');
+				console.log(err);
+			},
+			onError(error: unknown) {
+				didError = true;
+
+				console.error(error);
+			},
+			onAllReady() {
+				response.write(tail);
+			},
+			bootstrapScriptContent: `window.__REACT_QUERY_STATE__=${JSON.stringify(dehydratedState).replace(
+				/</g,
+				'\\u003c'
+			)}`,
+		}
 	);
-
-	dehydratedState = dehydrate(queryClient);
-
-	const rqHydrate = `<script id="rqstate">
-								window.__REACT_QUERY_STATE__=${JSON.stringify(dehydratedState ?? '{}').replace(/</g, '\\u003c')}
-							</script>`;
-
-	return { appHtml, rqHydrate };
+	setTimeout(abort, ABORT_DELAY);
 }
 
 export function createFetchHeaders(requestHeaders: expressRequest['headers']): Headers {

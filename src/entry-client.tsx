@@ -21,7 +21,7 @@ delete window.__REACT_QUERY_STATE__;
 const rqstate = document.getElementById('rqstate');
 rqstate?.remove();
 
-const container = document.getElementById('app');
+const container = document.getElementById('root');
 
 const router = createBrowserRouter(routes(queryClient));
 

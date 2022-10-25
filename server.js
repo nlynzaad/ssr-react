@@ -7,8 +7,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const isTest = process.env.NODE_ENV === 'test' || !!process.env.VITE_TEST_BUILD;
 
-process.env.MY_CUSTOM_SECRET = 'API_KEY_qwertyuiop';
-
 export async function createServer(root = process.cwd(), isProd = process.env.NODE_ENV === 'production', hmrPort) {
 	const resolve = (p) => path.resolve(__dirname, p);
 
@@ -60,11 +58,7 @@ export async function createServer(root = process.cwd(), isProd = process.env.NO
 				render = (await import('./dist/server/entry-server.js')).render;
 			}
 
-			const { appHtml, rqHydrate } = await render(req);
-			console.log('rqHydrate: ', rqHydrate);
-			const html = template.replace(`<!--app-html-->`, appHtml).replace('<!--hydrate-->', rqHydrate);
-
-			res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+			await render(req, res, template);
 		} catch (e) {
 			!isProd && vite.ssrFixStacktrace(e);
 			console.log(e.stack);
