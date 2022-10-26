@@ -1,10 +1,11 @@
-import Env from './pages/Env';
+import Env, { envLoader } from './pages/Env';
 import About from './pages/About';
-import Home from './pages/Home';
+import Home, { homeLoader } from './pages/Home';
 import App from './App';
 import React from 'react';
+import type { QueryClient } from '@tanstack/react-query';
 
-const routes = [
+const routes = (queryClient: QueryClient) => [
 	{
 		path: '/',
 		element: <App />,
@@ -12,6 +13,7 @@ const routes = [
 			{
 				index: true,
 				element: <Home />,
+				loader: homeLoader(queryClient),
 			},
 			{
 				path: 'about',
@@ -20,6 +22,7 @@ const routes = [
 			{
 				path: 'env',
 				element: <Env />,
+				loader: envLoader(queryClient),
 			},
 		],
 	},

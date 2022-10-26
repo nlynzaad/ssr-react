@@ -9,10 +9,12 @@ export interface todo {
 
 export const todosQuery = (id: number) => ({
 	queryKey: ['todos', 'home', id],
-	queryFn: async () =>
-		(
+	queryFn: async () => {
+		console.log('fetching');
+		return (
 			await axios.get<todo>(
 				`https://flash-the-slow-api.herokuapp.com/delay/1000/url/https://jsonplaceholder.typicode.com/todos/${id}`
 			)
-		).data,
+		).data;
+	},
 });

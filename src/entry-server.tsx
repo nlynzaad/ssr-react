@@ -25,7 +25,7 @@ export async function render(request: expressRequest, response: expressResponse,
 		},
 	});
 
-	const { query } = createStaticHandler(routes);
+	const { query } = createStaticHandler(routes(queryClient));
 	const remixRequest = createFetchRequest(request);
 	const context = await query(remixRequest);
 
@@ -34,7 +34,7 @@ export async function render(request: expressRequest, response: expressResponse,
 	}
 
 	let dehydratedState = dehydrate(queryClient);
-	const router = createStaticRouter(routes, context);
+	const router = createStaticRouter(routes(queryClient), context);
 	const head = template.split('<div id="root"></div>')[0] + '<div id="root">';
 	const tail = '</div>' + template.split('<div id="root"></div>')[1];
 
@@ -63,6 +63,7 @@ export async function render(request: expressRequest, response: expressResponse,
 			},
 			onAllReady() {
 				response.write(tail);
+				dehydratedState = dehydrate(queryClient);
 				response.write(
 					`<script nonce='rqState'>window.__REACT_QUERY_STATE__=${JSON.stringify(dehydratedState).replace(
 						/</g,

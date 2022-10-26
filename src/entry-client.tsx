@@ -32,7 +32,7 @@ const container = document.getElementById('root');
 
 hydrate(queryClient, dehydratedQueryState);
 
-const router = createBrowserRouter(routes, {
+const router = createBrowserRouter(routes(queryClient), {
 	hydrationData: dehydratedRouterState,
 });
 
