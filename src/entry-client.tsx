@@ -1,5 +1,5 @@
-import { Hydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React, { startTransition } from 'react';
+import { hydrate, Hydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React, { startTransition, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import routes from './routes';
@@ -30,7 +30,9 @@ elements.find((el) => el.nonce === 'rrState')?.remove();
 
 const container = document.getElementById('root');
 
-const router = createBrowserRouter(routes(queryClient), {
+hydrate(queryClient, dehydratedQueryState);
+
+const router = createBrowserRouter(routes, {
 	hydrationData: dehydratedRouterState,
 });
 

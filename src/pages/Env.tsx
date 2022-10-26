@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { Suspense } from 'react';
+import Title from '../components/Title';
 
 export default function Env() {
-	let msg = 'default message here';
-	return <h1>{msg}</h1>;
+	return (
+		<>
+			<h1>ENV</h1>
+
+			<Suspense fallback={<div>loading...</div>}>
+				<Title id={2} />
+			</Suspense>
+		</>
+	);
 }

@@ -1,19 +1,16 @@
 import Env from './pages/Env';
 import About from './pages/About';
-import Home, { homeLoader } from './pages/Home';
-import type { QueryClient } from '@tanstack/react-query';
-import type { RouteObject } from 'react-router-dom';
+import Home from './pages/Home';
 import App from './App';
 import React from 'react';
 
-const routes = (queryClient: QueryClient): RouteObject[] => [
+const routes = [
 	{
 		path: '/',
 		element: <App />,
 		children: [
 			{
 				index: true,
-				loader: homeLoader(queryClient),
 				element: <Home />,
 			},
 			{

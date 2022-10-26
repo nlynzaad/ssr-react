@@ -1,14 +1,24 @@
 import React from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 
 export default function App() {
+	const Style = (isActive: boolean): React.CSSProperties => {
+		return { color: isActive ? 'blue' : 'red', marginRight: '5px' };
+	};
+
 	return (
 		<>
 			<nav>
 				<ul>
-					<Link to={'/'}>Home</Link>
-					<Link to={'/env'}>Env</Link>
-					<Link to={'/about'}>About</Link>
+					<NavLink to={'/'} style={({ isActive }) => Style(isActive)} end>
+						Home
+					</NavLink>
+					<NavLink to={'/env'} style={({ isActive }) => Style(isActive)} end>
+						Env
+					</NavLink>
+					<NavLink to={'/about'} style={({ isActive }) => Style(isActive)} end>
+						About
+					</NavLink>
 				</ul>
 			</nav>
 			<Outlet />

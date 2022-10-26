@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import type { Request as expressRequest, Response as expressResponse } from 'express';
-import { QueryClientProvider, Hydrate, dehydrate, QueryClient, hydrate } from '@tanstack/react-query';
+import { QueryClientProvider, Hydrate, dehydrate, QueryClient } from '@tanstack/react-query';
 import { unstable_createStaticHandler as createStaticHandler } from '@remix-run/router';
 import {
 	unstable_createStaticRouter as createStaticRouter,
@@ -9,7 +9,7 @@ import {
 } from 'react-router-dom/server';
 import routes from './routes';
 
-const ABORT_DELAY = 5000;
+const ABORT_DELAY = 10000;
 
 export async function render(request: expressRequest, response: expressResponse, template: string) {
 	let didError = false;
@@ -25,7 +25,7 @@ export async function render(request: expressRequest, response: expressResponse,
 		},
 	});
 
-	const { query } = createStaticHandler(routes(queryClient));
+	const { query } = createStaticHandler(routes);
 	const remixRequest = createFetchRequest(request);
 	const context = await query(remixRequest);
 
@@ -33,8 +33,8 @@ export async function render(request: expressRequest, response: expressResponse,
 		throw context;
 	}
 
-	const dehydratedState = dehydrate(queryClient);
-	const router = createStaticRouter(routes(queryClient), context);
+	let dehydratedState = dehydrate(queryClient);
+	const router = createStaticRouter(routes, context);
 	const head = template.split('<div id="root"></div>')[0] + '<div id="root">';
 	const tail = '</div>' + template.split('<div id="root"></div>')[1];
 
