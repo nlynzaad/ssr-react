@@ -13,7 +13,7 @@ export const todosQuery = (id: number) => ({
 		console.log('fetching');
 		return (
 			await axios.get<todo>(
-				`https://flash-the-slow-api.herokuapp.com/delay/1000/url/https://jsonplaceholder.typicode.com/todos/${id}`
+				`https://flash-the-slow-api.herokuapp.com/delay/random/url/https://jsonplaceholder.typicode.com/todos/${id}`
 			)
 		).data;
 	},

@@ -2,9 +2,8 @@ import { addAndMultiply } from '../add';
 import { multiplyAndAdd } from '../multiply';
 import React, { Suspense } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
-import { useLoaderData } from 'react-router-dom';
 
-import { todosQuery, todo } from '../queries/todo';
+import { todosQuery } from '../queries/todo';
 import Title from '../components/Title';
 
 export const homeLoader = (queryClient: QueryClient) => async () => {
@@ -18,7 +17,6 @@ export const homeLoader = (queryClient: QueryClient) => async () => {
 };
 
 export default function Home() {
-	const { todo } = useLoaderData() as { todo: todo };
 	return (
 		<div>
 			<h1>Home</h1>
